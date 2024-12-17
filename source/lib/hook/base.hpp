@@ -47,7 +47,7 @@ namespace exl::hook {
 
     /* For member function pointers. */
     template<typename MemberFuncPtr>
-    requires util::FuncPtrTraits<MemberFuncPtr>::IsMemberFunc
+    requires std::is_member_function_pointer_v<MemberFuncPtr> && util::FuncPtrTraits<MemberFuncPtr>::IsMemberFunc
     auto Hook(MemberFuncPtr hook, typename util::FuncPtrTraits<MemberFuncPtr>::CPtr callback, bool do_trampoline = false) {
         auto adapted = util::member_func::Adapt(hook);
         if(adapted.IsVirtual()) {
@@ -60,7 +60,14 @@ namespace exl::hook {
     using InlineCtx = arch::InlineCtx;
     using InlineCallback = util::CFuncPtr<void, InlineCtx*>;
 
+    using InlineFloatCtx = arch::InlineFloatCtx;
+    using InlineFloatCallback = util::CFuncPtr<void, InlineFloatCtx*>;
+
     inline void HookInline(uintptr_t hook, InlineCallback callback) {
-        arch::HookInline(hook, reinterpret_cast<uintptr_t>(callback));
+        arch::HookInline(hook, reinterpret_cast<uintptr_t>(callback), false);
+    }
+
+    inline void HookInline(uintptr_t hook, InlineFloatCallback callback) {
+        arch::HookInline(hook, reinterpret_cast<uintptr_t>(callback), true);
     }
 }
